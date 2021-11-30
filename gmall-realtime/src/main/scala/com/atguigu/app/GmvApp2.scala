@@ -1,6 +1,6 @@
 package com.atguigu.app
 
-import com.alibaba.fastjson.JSON
+import com.alibaba.fastjson.{JSON, JSONArray, JSONObject}
 import com.atguigu.bean.OrderInfo
 import com.atguigu.constans.GmallConstants
 import com.atguigu.utils.MyKafkaUtil
@@ -8,16 +8,16 @@ import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.phoenix.spark.toProductRDDFunctions
 import org.apache.spark.SparkConf
-import org.apache.spark.streaming.dstream.{DStream, InputDStream}
 import org.apache.spark.streaming.{Seconds, StreamingContext}
+import org.apache.spark.streaming.dstream.{DStream, InputDStream}
 
 /**
- * @ClassName gmall-parent-GmvApp 
+ * @ClassName gmall-parent-GmvApp2
  * @Author Holden_—__——___———____————_____Xiao
- * @Create 2021年11月30日20:04 - 周二
- * @Describe 交易额需求，需要开启CanalClient来像kafka传参
+ * @Create 2021年11月30日22:28 - 周二
+ * @Describe 只需要接收kafka中的数据，不用再启动CanalClient发送数据，直接将canal对接kafka
  */
-object GmvApp {
+object GmvApp2 {
   def main(args: Array[String]): Unit = {
     //todo 1.创建sparkConf
     val sparkConf: SparkConf = new SparkConf().setAppName("GmvApp").setMaster("local[*]")
@@ -34,10 +34,8 @@ object GmvApp {
       //一个DStream由多个RDD组成，一个RDD里可以有多个分区,一个分区对应一个task,一个分区中有多个元素
       partition.map(record => {
         //有对应的名字的数据就装填进去，没有就为空
-        val orderInfo: OrderInfo = JSON.parseObject(record.value(), classOf[OrderInfo])
-        //create_time的数据类似这样:2020-06-20 16:12:39
-        orderInfo.create_date = orderInfo.create_time.split(" ")(0)
-        orderInfo.create_hour = orderInfo.create_time.split(" ")(1).split(":")(0)
+        val info: JSONArray = JSON.parseObject(record.value()).getJSONArray("data")
+        val orderInfo: OrderInfo = JSON.parseObject(info.get(0).toString, classOf[OrderInfo])
         orderInfo
       })
     })
@@ -52,7 +50,6 @@ object GmvApp {
     })
 
     orderInfoDStream.print()
-
 
     ssc.start()
     ssc.awaitTermination()

@@ -24,28 +24,15 @@ object Test2 {
     val sparkConf = new SparkConf().setAppName("SparkStreaming").setMaster("local[*]")
 
     //2.第二个参数是采集周期3秒，每3秒采集一次做统计分析,里面会创建SparkContext
-    val ssc = new StreamingContext(sparkConf, Seconds(2))
+    val ssc = new StreamingContext(sparkConf, Seconds(5))
 
 
     val lines: ReceiverInputDStream[String] = ssc.socketTextStream("hadoop102", 31313)
 
-    val value: DStream[StartUpLog] = lines.map(x => {
-      val l: Array[String] = x.split(",")
-      StartUpLog(l(0), l(1), l(2), l(3), l(4), l(5), l(6), l(7), l(8), l(9), l(10).toLong)
-    })
 
-    value.print()
 
-    val properties: Properties = new Properties()
-    properties.put("phoenix.schema.isNamespaceMappingEnabled", "true")
 
-    value.foreachRDD(rdd => {
-          rdd.saveToPhoenix(
-            "GMALL2021_DAU",
-            Seq("UID", "MID", "APPID", "AREA", "OS", "CH", "TYPE", "VS", "LOGDATE", "LOGHOUR", "TS"),
-            HBaseConfiguration.create,
-            Some("hadoop102,hadoop103,hadoop104:2181")) //集群
-        })
+
     ssc.start()
     ssc.awaitTermination()
   }

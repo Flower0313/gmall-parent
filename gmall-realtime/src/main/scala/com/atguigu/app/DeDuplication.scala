@@ -31,7 +31,8 @@ object DeDuplication {
     val ssc: StreamingContext = new StreamingContext(sparkConf, Seconds(3))
 
     //TODO 3.连接kafka
-    val kafkaDStream: InputDStream[ConsumerRecord[String, String]] = MyKafkaUtil.getKafkaStream(GmallConstants.KAFKA_TOPIC_STARTUP, ssc)
+    val kafkaDStream: InputDStream[ConsumerRecord[String, String]] = MyKafkaUtil
+      .getKafkaStream(GmallConstants.KAFKA_TOPIC_STARTUP, ssc)
 
     //TODO 4.将json数据转换为样例类
     //格式化时间

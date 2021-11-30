@@ -54,12 +54,10 @@ public class CanalClient {
 
                     //判断entryType是否为ROWDATA
                     if (CanalEntry.EntryType.ROWDATA.equals(entryType)) {
-                        //序列化数据
-                        ByteString storeValue = entry.getStoreValue();
 
                         //数据反序列化
-                        CanalEntry.RowChange rowChange = CanalEntry.RowChange.parseFrom(storeValue);
-                        //TODO 获取事件类型
+                        CanalEntry.RowChange rowChange = CanalEntry.RowChange.parseFrom(entry.getStoreValue());
+                        //TODO 获取事件类型，比如insert update delete
                         CanalEntry.EventType eventType = rowChange.getEventType();
 
                         //TODO 获取具体的数据
@@ -81,15 +79,15 @@ public class CanalClient {
      */
     private static void handler(String tableName, CanalEntry.EventType eventType, List<CanalEntry.RowData> rowDatasList) {
         //System.out.println(tableName + "|" + eventType + "|" + rowDatasList);
-        //若表示student，并且操作是INSERT
+        //order_info_test，并且操作是INSERT
         if ("order_info_test".equals(tableName) && CanalEntry.EventType.INSERT.equals(eventType)) {
-            for (CanalEntry.RowData rowData : rowDatasList) {
+            for (CanalEntry.RowData rowData : rowDatasList) {//一行数据
                 //rowData是关于列的json数据
                 //获取存放列的集合
                 List<CanalEntry.Column> afterColumnsList = rowData.getAfterColumnsList();
-                //获取每个列
+                //获取这一行的每个列
                 JSONObject jsonObject = new JSONObject();
-                for (CanalEntry.Column column : afterColumnsList) {
+                for (CanalEntry.Column column : afterColumnsList) {//循环的列中的信息
                     //column.getName获得列名,column.getValue获得列值
                     jsonObject.put(column.getName(), column.getValue());
                 }
