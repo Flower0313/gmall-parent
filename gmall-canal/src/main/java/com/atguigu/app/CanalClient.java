@@ -30,15 +30,15 @@ public class CanalClient {
             //2.获取连接
             canalConnector.connect();
 
-            //3.监控所有数据库
-            canalConnector.subscribe("gmall.order_info_test");
+            //3.监控gmall_realtime库下的所有表
+            canalConnector.subscribe("gmall_realtime.*");
             //回滚到未进行ack的地方，下次fetch的时候，可以从最后一个没有ack的地方开始拿
             canalConnector.rollback();
             //4.获取Message
             Message message = canalConnector.get(100);
 
             List<CanalEntry.Entry> entries = message.getEntries();
-            if (entries.size() <= 0) {
+            if (entries == null || entries.size() <= 0) {
                 System.out.println("没有数据，休息一会");
                 try {
                     Thread.sleep(3000);
@@ -67,20 +67,19 @@ public class CanalClient {
                     }
                 }
             }
-
         }
     }
 
 
     /**
-     * @param tableName 表名
-     * @param eventType DDL类型(Insert、Update、Delete)
+     * @param tableName    表名
+     * @param eventType    DDL类型(Insert、Update、Delete)
      * @param rowDatasList 改变的值，以集合形式输出[{..}{..}{..}]，有几个字段就有几个{}
      */
     private static void handler(String tableName, CanalEntry.EventType eventType, List<CanalEntry.RowData> rowDatasList) {
         //System.out.println(tableName + "|" + eventType + "|" + rowDatasList);
-        //order_info_test，并且操作是INSERT
-        if ("order_info_test".equals(tableName) && CanalEntry.EventType.INSERT.equals(eventType)) {
+        //变动的表是order_info，并且操作是INSERT
+        if ("order_info".equals(tableName) && CanalEntry.EventType.INSERT.equals(eventType)) {
             for (CanalEntry.RowData rowData : rowDatasList) {//一行数据
                 //rowData是关于列的json数据
                 //获取存放列的集合

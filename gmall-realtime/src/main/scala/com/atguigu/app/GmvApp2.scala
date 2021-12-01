@@ -16,6 +16,7 @@ import org.apache.spark.streaming.dstream.{DStream, InputDStream}
  * @Author Holden_—__——___———____————_____Xiao
  * @Create 2021年11月30日22:28 - 周二
  * @Describe 只需要接收kafka中的数据，不用再启动CanalClient发送数据，直接将canal对接kafka
+ *           前提是你需要canal的配置改成对接kafka的
  */
 object GmvApp2 {
   def main(args: Array[String]): Unit = {
@@ -36,12 +37,20 @@ object GmvApp2 {
         //有对应的名字的数据就装填进去，没有就为空
         val info: JSONArray = JSON.parseObject(record.value()).getJSONArray("data")
         val orderInfo: OrderInfo = JSON.parseObject(info.get(0).toString, classOf[OrderInfo])
+
+        val createTime: String = info.get(0).toString.split(",")(8)
+          .split(":")(1).replace('"', ' ').trim;
+        //创建日期
+        orderInfo.create_date = createTime.split(" ")(0)
+        //创建时间
+        orderInfo.create_hour = createTime.split(" ")(1)
+
         orderInfo
       })
     })
 
     //todo 5.将数据写入Hbase
-    orderInfoDStream.foreachRDD(rdd=>{
+    orderInfoDStream.foreachRDD(rdd => {
       rdd.saveToPhoenix("GMALL2021_ORDER_INFO",
         //数据按顺序写入，所以写入前就要按照这样排好序
         Seq("ID", "PROVINCE_ID", "CONSIGNEE", "ORDER_COMMENT", "CONSIGNEE_TEL", "ORDER_STATUS", "PAYMENT_WAY", "USER_ID", "IMG_URL", "TOTAL_AMOUNT", "EXPIRE_TIME", "DELIVERY_ADDRESS", "CREATE_TIME", "OPERATE_TIME", "TRACKING_NO", "PARENT_ORDER_ID", "OUT_TRADE_NO", "TRADE_BODY", "CREATE_DATE", "CREATE_HOUR"),

@@ -1,5 +1,6 @@
 package com.atguigu.app
 
+import com.alibaba.fastjson
 import com.alibaba.fastjson.{JSON, JSONObject}
 import com.atguigu.bean.OrderInfo
 
@@ -17,11 +18,17 @@ object JsonTest {
 
     val nObject: JSONObject = JSON.parseObject(kafkaJson)
 
-    val info = nObject.getJSONArray("data")
+    val info: fastjson.JSONArray = nObject.getJSONArray("data")
 
     val orderInfo: OrderInfo = JSON.parseObject(info.get(0).toString, classOf[OrderInfo])
 
-    println(orderInfo.id)
+    val createTime: String = info.get(0).toString.split(",")(8)
+      .split(":")(1).replace('"',' ').trim;
+
+    orderInfo.create_date = createTime.split(" ")(0)
+    orderInfo.create_hour = createTime.split(" ")(1)
+
+    println(orderInfo)
 
     
   }
