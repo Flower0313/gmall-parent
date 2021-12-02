@@ -20,16 +20,25 @@ import java.util.Date
 object DauHandler {
   //批次内去重
   def filterbyGroup(filterByRedisDStream: DStream[StartUpLog]) = {
+    /*
+    *
+    *
+    * */
     val value: DStream[StartUpLog] = {
+      //todo 1.将数据转化为k，v((mid,logDate),log),mid是设备id,logDate是登陆日期,它们组合成key
       val midAndDateToLogDStream: DStream[((String, String), StartUpLog)] = filterByRedisDStream.mapPartitions(partition => {
-        partition.map(log => {
+        partition.map(log => {//传入的是StartUpLog样例类
           ((log.mid, log.logDate), log)
         })
       })
+      //todo 2.groupByKey将相同key的数据聚和到同一个分区中,而(mid,logDate)作为key
       val midAndDateToLogIterDStream: DStream[((String, String), Iterable[StartUpLog])] = midAndDateToLogDStream.groupByKey()
+      //todo 3.将数据排序并取第一条数据,mapValues只对value进行操作
       val midAndDateToLogListDStream: DStream[((String, String), List[StartUpLog])] = midAndDateToLogIterDStream.mapValues(iter => {
+        //这里的iter就是指的List[StartUpLog],取集合中的比完大小的一个StartUpLog，按时间戳比大小,取每个用户第一次登陆的结果
         iter.toList.sortWith(_.ts < _.ts).take(1)
       })
+      //todo 4.将集合扁平化，因为List中存的是StartUpLog类，所以扁平化就是将去重后的StartUpLog逐个取出
       midAndDateToLogListDStream.flatMap(_._2)
     }
     value

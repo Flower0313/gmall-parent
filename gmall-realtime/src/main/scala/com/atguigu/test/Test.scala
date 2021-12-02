@@ -1,18 +1,13 @@
-package com.atguigu.app
+package com.atguigu.test
 
-import com.alibaba.fastjson.{JSON, JSONObject}
+import com.alibaba.fastjson.JSON
 import com.atguigu.bean.{OrderInfo, StartUpLog}
-import org.apache.hadoop.hbase.HBaseConfiguration
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.streaming.dstream.DStream
+import org.apache.spark.{SparkConf, SparkContext}
 import redis.clients.jedis.Jedis
 
-import java.text.SimpleDateFormat
-import java.util.Date
-
 /**
- * @ClassName gmall-parent-jjjjjj 
+ * @ClassName gmall-parent-jjjjjj
  * @Author Holden_—__——___———____————_____Xiao
  * @Create 2021年11月29日20:02 - 周一
  * @Describe
@@ -175,4 +170,3 @@ object Test {
   }
 
 }
-

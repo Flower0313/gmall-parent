@@ -15,7 +15,7 @@ import org.apache.spark.streaming.{Seconds, StreamingContext}
  * @ClassName gmall-parent-GmvApp 
  * @Author Holden_—__——___———____————_____Xiao
  * @Create 2021年11月30日20:04 - 周二
- * @Describe 交易额需求，需要开启CanalClient来像kafka传参
+ * @Describe 需求二：交易额，需要开启CanalClient来像kafka传参，数据来源于mysql
  */
 object GmvApp {
   def main(args: Array[String]): Unit = {

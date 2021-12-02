@@ -4,8 +4,10 @@ package com.atguigu.bean
  * @ClassName gmall-parent-StartUpLog 
  * @Author Holden_—__——___———____————_____Xiao
  * @Create 2021年11月29日15:43 - 周一
- * @Describe 样例类
+ * @Describe 启动日志样例类
  */
+
+
 case class StartUpLog(
                        var mid:String, //设备id
                        var uid:String, //用户id

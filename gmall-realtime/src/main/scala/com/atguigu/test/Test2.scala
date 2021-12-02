@@ -1,20 +1,11 @@
-package com.atguigu.app
+package com.atguigu.test
 
-import com.alibaba.fastjson.{JSON, JSONObject}
-import com.atguigu.bean.StartUpLog
-import org.apache.hadoop.hbase.HBaseConfiguration
-import org.apache.phoenix.spark.toProductRDDFunctions
-import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.rdd.RDD
-import org.apache.spark.streaming.dstream.{DStream, ReceiverInputDStream}
+import org.apache.spark.SparkConf
+import org.apache.spark.streaming.dstream.ReceiverInputDStream
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
-import java.text.SimpleDateFormat
-import java.util.Properties
-import scala.util.Properties
-
 /**
- * @ClassName gmall-parent-Test2 
+ * @ClassName gmall-parent-Test2
  * @Author Holden_—__——___———____————_____Xiao
  * @Create 2021年11月30日13:50 - 周二
  * @Describe
@@ -28,9 +19,6 @@ object Test2 {
 
 
     val lines: ReceiverInputDStream[String] = ssc.socketTextStream("hadoop102", 31313)
-
-
-
 
 
     ssc.start()

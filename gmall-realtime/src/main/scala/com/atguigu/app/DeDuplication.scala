@@ -19,7 +19,7 @@ import java.util.Date
  * @ClassName gmall-parent-DeDuplication
  * @Author Holden_—__——___———____————_____Xiao
  * @Create 2021年11月29日18:37 - 周一
- * @Describe 需求一：统计日活
+ * @Describe 需求一：统计日活，数据来源于脚本生成
  *
  */
 object DeDuplication {

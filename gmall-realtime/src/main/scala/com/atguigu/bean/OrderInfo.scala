@@ -4,8 +4,10 @@ package com.atguigu.bean
  * @ClassName gmall-parent-OrderInfo 
  * @Author Holden_—__——___———____————_____Xiao
  * @Create 2021年11月30日20:04 - 周二
- * @Describe
+ * @Describe 订单信息样例类
  */
+
+
 case class OrderInfo(
                       id: String,
                       province_id: String,

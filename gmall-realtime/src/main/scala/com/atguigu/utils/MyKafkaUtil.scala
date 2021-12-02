@@ -45,7 +45,7 @@ object MyKafkaUtil {
   def getKafkaStream(topic: String, ssc: StreamingContext): InputDStream[ConsumerRecord[String, String]] = {
     val dStream: InputDStream[ConsumerRecord[String, String]] = KafkaUtils.createDirectStream[String, String](
       ssc,
-      LocationStrategies.PreferConsistent,
+      LocationStrategies.PreferConsistent,//优先位置，框架自动匹配
       ConsumerStrategies.Subscribe[String, String](Array(topic), kafkaParam))
     dStream
   }
