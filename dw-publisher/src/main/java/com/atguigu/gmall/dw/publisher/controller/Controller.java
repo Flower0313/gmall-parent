@@ -89,5 +89,7 @@ public class Controller {
 
     }
 
-
+    public String realtimeTotal(@RequestParam("date") String date) {
+        return "";
+    }
 }

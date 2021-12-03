@@ -1,6 +1,7 @@
 package com.atguigu.utils
 
-import java.util.Properties
+import java.text.SimpleDateFormat
+import java.util.{Date, Properties}
 
 /**
  * @ClassName gmall-parent-testPro 
@@ -10,6 +11,10 @@ import java.util.Properties
  */
 object testPro {
   def main(args: Array[String]): Unit = {
-    println("~~~~牛逼牛逼~~~~")
+    val sdf: SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:ss:mm")
+
+    val ts: Long = 1638432453698L / 1000 / 60
+    val str: String = sdf.format(new Date(ts))
+    println(str)
   }
 }

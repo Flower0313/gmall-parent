@@ -1,9 +1,14 @@
 package com.atguigu.test
 
 import com.atguigu.utils.MyEsUtil
+import com.ibm.icu.text.SimpleDateFormat
 import io.searchbox.client.JestClient
-import io.searchbox.core.Index
+import io.searchbox.core.{Bulk, BulkResult, Index, Search, SearchResult}
+import org.elasticsearch.index.query.{BoolQueryBuilder, TermQueryBuilder}
+import org.elasticsearch.search.builder.SearchSourceBuilder
+
 import java.util
+import java.util.Date
 
 /**
  * @ClassName gmall-parent-EStest 
@@ -13,7 +18,7 @@ import java.util
  */
 object EStest {
   def main(args: Array[String]): Unit = {
-    insertClass
+    readData
   }
 
   def insertSimple() = {
@@ -60,9 +65,46 @@ object EStest {
     client.close()
   }
 
-  def Test() = {
+  def readData() = {
+    println("进来了")
     val client: JestClient = MyEsUtil.getClient
+    val mid: String = "mid_386"
+    val qStr: String =
+      s"""
+         |{
+         |    "query": {
+         |      "bool": {
+         |        "filter": {
+         |          "term":{"mid":"${mid}"}
+         |        }
+         |      }
+         |    },
+         |    "_source": ["mid","ts"]
+         |}
+         |""".stripMargin
 
+    val search: Search = new Search.Builder(qStr)
+      .addIndex("gmall_coupon_alert-query")
+      .addType("_doc")
+      .build()
+
+    val result: SearchResult = client.execute(search)
+    var isIndexFirst: Boolean = false;
+
+
+    if (result.getTotal == null) {
+      isIndexFirst = true
+    }
+    if(!isIndexFirst){
+      val hits: util.List[SearchResult#Hit[util.HashMap[String, Any], Void]] = result.getHits(classOf[util.HashMap[String, Any]])
+      if (hits.iterator().hasNext && !isIndexFirst) {
+        val decimal: BigDecimal = BigDecimal(hits.iterator().next().source.get("ts").toString)
+
+        if ((1638466860000L / 1000) - decimal.toLong / 1000 >= 60) {
+          println("超过了一分钟,可以执行写入...")
+        }
+      }
+    }
 
     client.close()
   }

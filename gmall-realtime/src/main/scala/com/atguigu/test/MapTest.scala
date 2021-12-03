@@ -28,9 +28,9 @@ object MapTest {
       EventLog("mid_108", "313", "gmall2019", "beijing", "andriod", "event", "coupon", "22", "10", "24", "2021-12-02", "16", "1638432453698".toLong),
       EventLog("mid_108", "222", "gmall2019", "hunan", "andriod", "event", "coupon", "6", "35", "38", "2021-12-02", "16", "1638432453698".toLong),
       EventLog("mid_313", "123", "gmall2019", "shandong", "andriod", "event", "coupon", "13", "40", "32", "2021-12-02", "16", "1638432453699".toLong))),
-      ("mid_110", ArrayBuffer(EventLog("mid_110", "1111", "gmall2019", "guangdong", "andriod", "event", "coupon", "15", "30", "9", "2021-11-30", "16", "1638277851091".toLong),
-        EventLog("mid_110", "2222", "gmall2019", "guangdong", "andriod", "event", "coupon", "15", "30", "9", "2021-11-30", "16", "1638277851091".toLong),
-        EventLog("mid_110", "3333", "gmall2019", "guangdong", "andriod", "event", "coupon", "15", "30", "9", "2021-11-30", "16", "1638277851091".toLong))), (
+      ("mid_386", ArrayBuffer(EventLog("mid_386", "1111", "gmall2019", "guangdong", "andriod", "event", "coupon", "15", "30", "9", "2021-11-30", "16", "1638467970000".toLong),
+        EventLog("mid_386", "2222", "gmall2019", "guangdong", "andriod", "event", "coupon", "15", "30", "9", "2021-11-30", "16", "1638467970000".toLong),
+        EventLog("mid_386", "3333", "gmall2019", "guangdong", "andriod", "event", "coupon", "15", "30", "9", "2021-11-30", "16", "1638467970000".toLong))), (
         "mid_210", ArrayBuffer(EventLog("mid_110", "1111", "gmall2019", "guangdong", "andriod", "event", "clickItem", "15", "30", "9", "2021-12-01", "16", "1638432453698".toLong))
       ))
 
@@ -78,7 +78,7 @@ object MapTest {
 
     val resList = alterLogs.map(x => {
       val indexName: String = GmallConstants.ES_ALERT_INDEX + "-" + sdf.format(new Date(x.ts)).split(" ")(0)
-      val list: List[(String, CouponAlertInfo)] = List((indexName + x.ts / 1000 / 60, x))
+      val list: List[(String, CouponAlertInfo)] = List((x.mid + x.ts / 1000 / 60, x))
       MyEsUtil.insertBulk(indexName, list)
     })
 
