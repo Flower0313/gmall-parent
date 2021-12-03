@@ -20,14 +20,11 @@ import java.util.Date
 object DauHandler {
   //批次内去重
   def filterbyGroup(filterByRedisDStream: DStream[StartUpLog]) = {
-    /*
-    *
-    *
-    * */
+
     val value: DStream[StartUpLog] = {
       //todo 1.将数据转化为k，v((mid,logDate),log),mid是设备id,logDate是登陆日期,它们组合成key
       val midAndDateToLogDStream: DStream[((String, String), StartUpLog)] = filterByRedisDStream.mapPartitions(partition => {
-        partition.map(log => {//传入的是StartUpLog样例类
+        partition.map(log => { //传入的是StartUpLog样例类
           ((log.mid, log.logDate), log)
         })
       })
@@ -52,6 +49,7 @@ object DauHandler {
 
       val logs: Iterator[StartUpLog] = partition.filter(log => {
         val redisKey = "DAU:" + log.logDate
+        //以每天的时间为key,然后value存储的是当天所有的mid
         val boolean: Boolean = jedisClient.sismember(redisKey, log.mid)
         !boolean
       })
@@ -105,7 +103,7 @@ object DauHandler {
         partition.foreach(log => {
           //每天都有不同的key，每个key存了今天的访问数据，若觉得占内存，可以flushDB昨天的数据
           val redisKey = "DAU:" + log.logDate
-          //将mid存入redis,mid是唯一的,记住这里是按天创建key的
+          //将mid存入redis,mid是唯一的,记住这里是按天创建key的,只管存,sadd结构默认去重
           jedisClient.sadd(redisKey, log.mid)
         })
         //关闭连接

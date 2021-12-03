@@ -84,7 +84,7 @@ object AlertApp {
         * */
         println("uids:" + uids.size() + "||bool:" + bool)
         var nowTime: Long = iter.map(x => x.ts).head
-        if (uids.size() >= 1 && bool) {//目前调成了1
+        if (uids.size() >= 3 && bool) { //目前调成了1
           (CouponAlertInfo(mid, uids, itemIds, events, nowTime))
         } else {
           (CouponAlertInfo("-1", null, null, null, nowTime))
@@ -102,11 +102,12 @@ object AlertApp {
         //val longs: Iterator[Long] = iter.map(x => x.ts)
         //拼接index,这里的时间可能存在零点漂移的问题,"gmall_coupon_alert-2021-12-02",可以试着改成iter.map(x => x.ts).toList.head
         val indexName: String = GmallConstants.ES_ALERT_INDEX + "-" + sdf.format(new Date(System.currentTimeMillis())).split(" ")(0)
+        //若不toList,返回的类型就是Iterator[(String,CouponAlertInfo)]
         val list: List[(String, CouponAlertInfo)] = iter.toList.map(alert => {
           /*
           * Q:为什么需要这么写呢?
-          * A:因为es上的数据是幂等性的，这样拼接id的意思就是每分钟的id名称都不一样，所以就实现了
-          *   每个设备每分钟预警一次
+          * A:因为es上的数据是幂等性的，这样拼接id的意思就是每分钟的id名称都不一样，在一分钟内id就是一样的，
+          *   保证了每分钟一份,所以就实现了每个设备每分钟预警一次
           * */
           (alert.mid + alert.ts / 1000 / 60, alert)
         })

@@ -1,8 +1,10 @@
 package com.atguigu.utils;
 
+import com.alibaba.otter.canal.protocol.CanalEntry;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -31,6 +33,7 @@ public class MyKafkaSender {
         }
         kafkaProducer.send(new ProducerRecord<String, String>(topic, msg));
     }
+
 
 
 }

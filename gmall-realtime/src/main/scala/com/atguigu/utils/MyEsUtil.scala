@@ -76,6 +76,7 @@ object MyEsUtil {
         .defaultType("_doc")
       //其实也就一条元素
       for ((id, doc) <- docList) {
+        //id相同的话就保证了幂等性
         //直接扔doc是因为它已经是个样例类了，会自动转换成json
         val index: Index = new Index.Builder(doc).id(id).build()
         bulkBuilder.addAction(index)
