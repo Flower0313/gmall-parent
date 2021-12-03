@@ -16,7 +16,7 @@ public interface PublisherService {
     public Map getDauTotalHours(String date);
 
     //获取全部订单的总数
-    public Double getOrderAmountTotal(String date);
+    public Double getGmvTotal(String date);
 
     //交易额分时数据
     public Map<String, Double> getOrderAmountHourMap(String date);

@@ -51,15 +51,17 @@ public class PublisherServiceImpl implements PublisherService {
     }
 
     @Override
-    public Double getOrderAmountTotal(String date) {
+    public Double getGmvTotal(String date) {
         return orderMapper.selectOrderAmountTotal(date);
     }
 
     @Override
     public Map<String, Double> getOrderAmountHourMap(String date) {
+        //使用List里面装Map,因为可能有多行数据,每行都是Map格式
         List<Map> list = orderMapper.selectOrderAmountHourMap(date);
         Map<String, Double> result = new HashMap<>();
         for (Map map : list) {
+            //字段别名要用大写去接
             result.put((String) map.get("CREATE_HOUR"), (Double) map.get("SUM_AMOUNT"));
         }
         return result;

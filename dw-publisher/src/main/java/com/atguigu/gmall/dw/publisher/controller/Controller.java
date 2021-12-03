@@ -45,6 +45,9 @@ public class Controller {
         //从service层获取数据
         Integer dauTotal = publisherService.getDauTotal(date);
 
+        Double amountTotal = publisherService.getGmvTotal(date);
+        amountTotal = amountTotal == null ? 0 : amountTotal;
+
         //创建list集合放最终数据
         ArrayList<JSONObject> result = new ArrayList<>();
 
@@ -52,6 +55,10 @@ public class Controller {
         JSONObject dauMap = new JSONObject();
         //创建存放新增设备的map集合
         JSONObject devMap = new JSONObject();
+
+        //创建存放交易额总数的map集合
+        JSONObject gmvMap = new JSONObject();
+
 
         dauMap.put("id", "dau");
         dauMap.put("name", "新增日活");
@@ -61,8 +68,13 @@ public class Controller {
         devMap.put("name", "新增设备");
         devMap.put("value", 233);//写死
 
+        gmvMap.put("id", "order_amount");
+        gmvMap.put("name", "新增交易额");
+        gmvMap.put("value", amountTotal);
+
         result.add(dauMap);
         result.add(devMap);
+        result.add(gmvMap);
 
         return JSONObject.toJSONString(result);
     }
@@ -86,10 +98,33 @@ public class Controller {
         result.put("today", todayHourMap);
 
         return JSONObject.toJSONString(result);
-
     }
 
-    public String realtimeTotal(@RequestParam("date") String date) {
-        return "";
+    @RequestMapping("realtime-hours")
+    public String realtimeHours(@RequestParam("id") String id, @RequestParam("date") String date) {
+        //获取昨天的日期
+        String yesterday = LocalDate.parse(date).plusDays(-1).toString();
+
+        Map todayHourMap = null;
+        Map yesterdayHourMap = null;
+
+        if ("dau".equals(id)) {
+            //获取今天的日活数据
+            todayHourMap = publisherService.getOrderAmountHourMap(date);
+            yesterdayHourMap = publisherService.getOrderAmountHourMap(yesterday);
+        } else if ("order_amount".equals(id)) {
+            //获取今天交易额数据
+            todayHourMap = publisherService.getOrderAmountHourMap(date);
+            yesterdayHourMap = publisherService.getOrderAmountHourMap(yesterday);
+        }
+
+        //创建map集合用于存放结果数据
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("yesterday", yesterdayHourMap);
+        result.put("today", todayHourMap);
+
+        return JSONObject.toJSONString(result);
     }
+
+
 }
