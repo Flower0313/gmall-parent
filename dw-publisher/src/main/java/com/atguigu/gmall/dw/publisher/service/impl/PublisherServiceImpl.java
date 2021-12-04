@@ -174,7 +174,6 @@ public class PublisherServiceImpl implements PublisherService {
         ageOptions.add(up30Opt);
         ageOptions.add(up20AndLow30Opt);
 
-        Stat ageStat = new Stat(ageOptions, "用户年龄占比");
 
         //TODO 性别比例聚合组
         TermsAggregation groupByGender = aggregations.getTermsAggregation("groupBy_user_gender");//获取聚合组中指定聚合
@@ -198,6 +197,7 @@ public class PublisherServiceImpl implements PublisherService {
         genderOptions.add(maleOpt);
         genderOptions.add(femaleOpt);
 
+        Stat ageStat = new Stat(ageOptions, "用户年龄占比");
         Stat genderStat = new Stat(genderOptions, "用户性别占比");
 
         ArrayList<Object> stats = new ArrayList<>();
