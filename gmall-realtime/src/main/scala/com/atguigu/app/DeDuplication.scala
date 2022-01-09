@@ -4,12 +4,15 @@ import com.alibaba.fastjson.JSON
 import com.atguigu.bean.StartUpLog
 import com.atguigu.constans.GmallConstants
 import com.atguigu.handler.DauHandler.{filterByRedis2, filterbyGroup, saveMidToRedis}
-import com.atguigu.utils.MyKafkaUtil
+import com.atguigu.utils.{MyKafkaUtil, OffsetManagerUtil}
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.common.TopicPartition
 import org.apache.phoenix.spark.toProductRDDFunctions
 import org.apache.spark.SparkConf
+import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.dstream.{DStream, InputDStream}
+import org.apache.spark.streaming.kafka010.{HasOffsetRanges, OffsetRange}
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
 import java.text.SimpleDateFormat
@@ -20,6 +23,9 @@ import java.util.Date
  * @Author Holden_—__——___———____————_____Xiao
  * @Create 2021年11月29日18:37 - 周一
  * @Describe 需求一：统计日活，数据来源于脚本生成
+ *
+ *           数据来源:Kafka的主题=>GMALL_STARTUP
+ *           数据去向:Hbase的表=>GMALL2021_DAU
  *
  */
 object DeDuplication {
@@ -57,7 +63,7 @@ object DeDuplication {
     * */
 
     //批次间去重,这里去重的是本批次数据和之前批次的数据
-    val filterByRedisDStream: DStream[StartUpLog] = filterByRedis2(startUpLogDStream, ssc.sparkContext)
+    val filterByRedisDStream: DStream[StartUpLog] = filterByRedis2(startUpLogDStream)
     //批次内去重，这里去重的本批次的数据
     val filterByGroupDStream: DStream[StartUpLog] = filterbyGroup(filterByRedisDStream)
     filterByGroupDStream.cache()

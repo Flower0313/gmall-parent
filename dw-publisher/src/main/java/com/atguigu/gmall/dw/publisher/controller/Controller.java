@@ -22,7 +22,7 @@ import java.util.Map;
  * @Describe 常见注解
  * @Controller 定义在类上面，作用是将这个类标识为controller层
  * @ResponsBody 定义在方法上，作用是返回普通对象而不是页面
- * @RestController 定义在类上，作用=Controller+ResponsBody
+ * @RestController 定义在类上，作用=Controller+ResponseBody
  * @RequestMapping("xxx") 定义在方法上，作用标识请求所调用的方法，根据括号中映射名来确定调取哪个方法
  * @RequestParam("xxx") 定义在每个形参前，作用当发送过来的请求携带参数时可以标识参数所对应的方法中的参数
  * @Autowired 定义在类中，自动找到接口的实现

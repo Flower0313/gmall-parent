@@ -1,18 +1,22 @@
 package com.atguigu.utils
 
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.dstream.InputDStream
 import org.apache.spark.streaming.kafka010.{ConsumerStrategies, KafkaUtils, LocationStrategies}
 
+import java.io
 import java.util.Properties
+import scala.collection.mutable
 
 /**
  * @ClassName gmall-parent-MyKafkaUtil 
  * @Author Holden_—__——___———____————_____Xiao
  * @Create 2021年11月29日15:24 - 周一
  * @Describe 消费kafka数据
+ *           官方案例:https://spark.apache.org/docs/3.0.0/streaming-kafka-0-10-integration.html
  */
 object MyKafkaUtil {
   //1.创建配置信息对象
@@ -22,7 +26,7 @@ object MyKafkaUtil {
   val broker_list: String = properties.getProperty("kafka.broker.list");
 
   //3.kafka消费者配置
-  val kafkaParam = Map(
+  val kafkaParam = collection.mutable.Map(
     "bootstrap.servers" -> broker_list,
     //key和value在传输过程中需要序列化
     "key.deserializer" -> classOf[StringDeserializer],
@@ -34,19 +38,31 @@ object MyKafkaUtil {
     "auto.offset.reset" -> "latest",
     //如果是true，则这个消费者的偏移量会在后台自动提交,但是kafka宕机容易丢失数据
     //如果是false，会需要手动维护kafka偏移量
-    "enable.auto.commit" -> (true: java.lang.Boolean)
+    "enable.auto.commit" -> (false: java.lang.Boolean)
   )
 
-  // 创建DStream，返回接收到的输入数据
-  // LocationStrategies：根据给定的主题和集群地址创建consumer
-  // LocationStrategies.PreferConsistent：持续的在所有Executor之间分配分区
-  // ConsumerStrategies：选择如何在Driver和Executor上创建和配置Kafka Consumer
-  // ConsumerStrategies.Subscribe：订阅一系列主题
+  /*
+  * Explain
+  * 创建DStream，返回接收到的输入数据
+  * LocationStrategies：根据给定的主题和集群地址创建consumer
+  * LocationStrategies.PreferConsistent：持续的在所有Executor之间分配分区
+  * ConsumerStrategies：选择如何在Driver和Executor上创建和配置Kafka Consumer
+  * ConsumerStrategies.Subscribe：订阅一系列主题
+  * */
   def getKafkaStream(topic: String, ssc: StreamingContext): InputDStream[ConsumerRecord[String, String]] = {
     val dStream: InputDStream[ConsumerRecord[String, String]] = KafkaUtils.createDirectStream[String, String](
       ssc,
-      LocationStrategies.PreferConsistent,//优先位置，框架自动匹配
+      LocationStrategies.PreferConsistent, //优先位置，框架自动匹配
       ConsumerStrategies.Subscribe[String, String](Array(topic), kafkaParam))
+    dStream
+  }
+
+  //指定偏移量消费
+  def getKafkaOffsetStream(topic: String, ssc: StreamingContext, offset: Map[TopicPartition, Long]): InputDStream[ConsumerRecord[String, String]] = {
+    val dStream: InputDStream[ConsumerRecord[String, String]] = KafkaUtils.createDirectStream[String, String](
+      ssc,
+      LocationStrategies.PreferConsistent, //优先位置，框架自动匹配
+      ConsumerStrategies.Subscribe[String, String](Array(topic), kafkaParam, offset))
     dStream
   }
 }

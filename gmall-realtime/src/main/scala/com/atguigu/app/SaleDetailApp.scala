@@ -37,7 +37,7 @@ import scala.collection.JavaConverters.{asScalaBufferConverter, asScalaSetConver
 object SaleDetailApp {
   def main(args: Array[String]): Unit = {
     val sparkConf: SparkConf = new SparkConf().setAppName("SaleDetailApp").setMaster("local[*]")
-    val ssc: StreamingContext = new StreamingContext(sparkConf, Seconds(5))
+    val ssc: StreamingContext = new StreamingContext(sparkConf, Seconds(5))//5秒窗口
 
     //3.获取kafka数据
     val orderDStream: InputDStream[ConsumerRecord[String, String]] = MyKafkaUtil
@@ -48,19 +48,21 @@ object SaleDetailApp {
       .getKafkaStream(GmallConstants.KAFKA_TOPIC_ORDER_DETAIL, ssc)
 
     //4.将数据转化为样例类
-    val idToInfoDStream: DStream[(String, OrderInfo)] = orderDStream.mapPartitions(partition => {
-      partition.map(record => {
-        //将数据转化为样例类
-        val orderInfo: OrderInfo = JSON.parseObject(record.value(), classOf[OrderInfo])
-        //create_time yyyy-MM-dd HH:mm:ss
-        //补全create_date字段
-        orderInfo.create_date = orderInfo.create_time.split(" ")(0)
-        //补全create_hour字段
-        orderInfo.create_hour = orderInfo.create_time.split(" ")(1).split(":")(0)
-        //返回数据
-        (orderInfo.id, orderInfo)
+    val idToInfoDStream: DStream[(String, OrderInfo)] = orderDStream.mapPartitions(
+      //Attention 每个分区的元素进行单独的转换
+      partition => {
+        partition.map(record => {
+          //将数据转化为样例类
+          val orderInfo: OrderInfo = JSON.parseObject(record.value(), classOf[OrderInfo])
+          //create_time yyyy-MM-dd HH:mm:ss
+          //补全create_date字段
+          orderInfo.create_date = orderInfo.create_time.split(" ")(0)
+          //补全create_hour字段
+          orderInfo.create_hour = orderInfo.create_time.split(" ")(1).split(":")(0)
+          //返回数据
+          (orderInfo.id, orderInfo)
+        })
       })
-    })
 
     //将order_id提出来放在元组的第一个位置
     val idToDetailDStream: DStream[(String, OrderDetail)] = orderDetailDStream.mapPartitions(iter => {
@@ -70,7 +72,7 @@ object SaleDetailApp {
       })
     })
 
-    //5.使用fullouterjoin防止join不上的数据丢失
+    //5.使用full outer join防止join不上的数据丢失
     val fullDStream: DStream[(String, (Option[OrderInfo], Option[OrderDetail]))] = idToInfoDStream.fullOuterJoin(idToDetailDStream)
 
 

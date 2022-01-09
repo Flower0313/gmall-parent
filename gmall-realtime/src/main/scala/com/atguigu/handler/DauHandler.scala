@@ -22,7 +22,7 @@ object DauHandler {
   def filterbyGroup(filterByRedisDStream: DStream[StartUpLog]) = {
 
     val value: DStream[StartUpLog] = {
-      //todo 1.将数据转化为k，v((mid,logDate),log),mid是设备id,logDate是登陆日期,它们组合成key
+      //todo 1.将数据转化为k，v,[(mid,logDate),log],mid是设备id,logDate是登陆日期,它们组合成key
       val midAndDateToLogDStream: DStream[((String, String), StartUpLog)] = filterByRedisDStream.mapPartitions(partition => {
         partition.map(log => { //传入的是StartUpLog样例类
           ((log.mid, log.logDate), log)
@@ -42,20 +42,33 @@ object DauHandler {
   }
 
   //批次间去重：方案二
-  def filterByRedis2(startUpLogDStream: DStream[StartUpLog], sc: SparkContext) = {
-    val value: DStream[StartUpLog] = startUpLogDStream.mapPartitions(partition => {
-      val jedisClient: Jedis = new Jedis("hadoop102", 6379)
-      jedisClient.auth("w654646")
+  def filterByRedis2(startUpLogDStream: DStream[StartUpLog]) = {
+    val value: DStream[StartUpLog] = startUpLogDStream.mapPartitions(
+      //每个分区连接一次redis
+      partition => {
+        val jedisClient: Jedis = new Jedis("hadoop102", 6379)
+        jedisClient.auth("w654646")
 
-      val logs: Iterator[StartUpLog] = partition.filter(log => {
-        val redisKey = "DAU:" + log.logDate
-        //以每天的时间为key,然后value存储的是当天所有的mid
-        val boolean: Boolean = jedisClient.sismember(redisKey, log.mid)
-        !boolean
+        val logs: Iterator[StartUpLog] = partition.filter(log => {
+          //设计key,以每天日期为key,value就是设备id集合
+          val redisKey: String = "DAU:" + log.logDate
+          //以每天的时间为key,然后value存储的是当天所有的mid
+          val boolean: Boolean = jedisClient.sismember(redisKey, log.mid)
+          /*
+          * Explain
+          *  设置失效时间,若没有设置失效时间就设置一天,为啥要判断呢是否等于-1呢?
+          *  因为若ttl=-1表示没有设置失效时间，是第一条数据因为一天很长,假设你00:01的数据设置了24小时时间,
+          *  到23:00又来了一条数据，又刷新了失效时间,这个key又得等24小时才失效
+          * */
+          if (jedisClient.ttl(redisKey) == -1) {
+            jedisClient.expire(redisKey, 3600 * 24)
+          }
+
+          !boolean
+        })
+        jedisClient.close()
+        logs
       })
-      jedisClient.close()
-      logs
-    })
     value
   }
 
